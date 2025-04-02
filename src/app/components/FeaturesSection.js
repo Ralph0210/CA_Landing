@@ -22,13 +22,68 @@ const FeaturesSection = () => {
   const [isSecondCardHovered, setIsSecondCardHovered] = useState(false)
   const [isThirdCardHovered, setIsThirdCardHovered] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const [isMounted, setIsMounted] = useState(false)
   const cursorX = useMotionValue(0)
   const cursorY = useMotionValue(0)
   const springConfig = { damping: 25, stiffness: 700 }
   const cursorXSpring = useSpring(cursorX, springConfig)
   const cursorYSpring = useSpring(cursorY, springConfig)
 
+  // Create transforms at the top level with fallback values
+  const rotateX = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [15, -15]
+  )
+  const rotateY = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [-15, 15]
+  )
+
+  // Create transforms for floating crypto symbols
+  const floatingSymbolsX = Array.from({ length: 8 }).map(() =>
+    useTransform(cursorXSpring, [0, dimensions.width || 1000], [-50, 50])
+  )
+  const floatingSymbolsY = Array.from({ length: 8 }).map(() =>
+    useTransform(cursorYSpring, [0, dimensions.height || 1000], [-50, 50])
+  )
+
+  // Create transforms for interactive orb
+  const orbX = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [-100, 100]
+  )
+  const orbY = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [-100, 100]
+  )
+
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
+
+    // Set initial dimensions
+    setDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    })
+
+    // Handle window resize
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }
+
+    // Handle mouse move
     const handleMouseMove = (e) => {
       setMousePosition({
         x: e.clientX,
@@ -36,21 +91,20 @@ const FeaturesSection = () => {
       })
     }
 
+    window.addEventListener("resize", handleResize)
     window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
+
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("mousemove", handleMouseMove)
+    }
+  }, [isMounted])
 
   useEffect(() => {
+    if (!isMounted) return
     cursorX.set(mousePosition.x)
     cursorY.set(mousePosition.y)
-  }, [mousePosition, cursorX, cursorY])
-
-  const rotateX = useTransform(
-    cursorYSpring,
-    [0, window.innerHeight],
-    [15, -15]
-  )
-  const rotateY = useTransform(cursorXSpring, [0, window.innerWidth], [-15, 15])
+  }, [mousePosition, cursorX, cursorY, isMounted])
 
   useEffect(() => {
     // Create animations for each card
@@ -94,6 +148,10 @@ const FeaturesSection = () => {
     }
   }, [])
 
+  if (!isMounted) {
+    return null
+  }
+
   return (
     <section
       className={`relative py-24 sm:py-32 bg-[#0A0A0A] ${montserrat.variable} font-montserrat`}
@@ -127,16 +185,8 @@ const FeaturesSection = () => {
                 repeatType: "reverse",
               }}
               style={{
-                x: useTransform(
-                  cursorXSpring,
-                  [0, window.innerWidth],
-                  [-50, 50]
-                ),
-                y: useTransform(
-                  cursorYSpring,
-                  [0, window.innerHeight],
-                  [-50, 50]
-                ),
+                x: floatingSymbolsX[i],
+                y: floatingSymbolsY[i],
               }}
               className={`absolute w-8 h-8 rounded-full blur-xl ${
                 i % 4 === 0
@@ -182,12 +232,8 @@ const FeaturesSection = () => {
         {/* Interactive orb */}
         <motion.div
           style={{
-            x: useTransform(cursorXSpring, [0, window.innerWidth], [-100, 100]),
-            y: useTransform(
-              cursorYSpring,
-              [0, window.innerHeight],
-              [-100, 100]
-            ),
+            x: orbX,
+            y: orbY,
           }}
           className="absolute top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10 rounded-full blur-3xl"
         />

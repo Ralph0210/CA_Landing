@@ -6,13 +6,84 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 const BackgroundElements = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Initialize motion values with 0
   const cursorX = useMotionValue(0)
   const cursorY = useMotionValue(0)
   const springConfig = { damping: 25, stiffness: 700 }
   const cursorXSpring = useSpring(cursorX, springConfig)
   const cursorYSpring = useSpring(cursorY, springConfig)
 
+  // Create transforms at the top level
+  const rotateX = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [15, -15]
+  )
+  const rotateY = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [-15, 15]
+  )
+  const orb1X = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [-100, 100]
+  )
+  const orb1Y = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [-100, 100]
+  )
+  const orb2X = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [100, -100]
+  )
+  const orb2Y = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [100, -100]
+  )
+  const orb3X = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [-50, 50]
+  )
+  const orb3Y = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [-50, 50]
+  )
+  const orb4X = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [50, -50]
+  )
+  const orb4Y = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [50, -50]
+  )
+  const orb5X = useTransform(
+    cursorXSpring,
+    [0, dimensions.width || 1000],
+    [-30, 30]
+  )
+  const orb5Y = useTransform(
+    cursorYSpring,
+    [0, dimensions.height || 1000],
+    [-30, 30]
+  )
+
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
+
     // Set initial dimensions
     setDimensions({
       width: window.innerWidth,
@@ -42,15 +113,17 @@ const BackgroundElements = () => {
       window.removeEventListener("resize", handleResize)
       window.removeEventListener("mousemove", handleMouseMove)
     }
-  }, [])
+  }, [isMounted])
 
   useEffect(() => {
+    if (!isMounted) return
     cursorX.set(mousePosition.x)
     cursorY.set(mousePosition.y)
-  }, [mousePosition, cursorX, cursorY])
+  }, [mousePosition, cursorX, cursorY, isMounted])
 
-  const rotateX = useTransform(cursorYSpring, [0, dimensions.height], [15, -15])
-  const rotateY = useTransform(cursorXSpring, [0, dimensions.width], [-15, 15])
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -60,8 +133,8 @@ const BackgroundElements = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
         style={{
-          x: useTransform(cursorXSpring, [0, dimensions.width], [-100, 100]),
-          y: useTransform(cursorYSpring, [0, dimensions.height], [-100, 100]),
+          x: orb1X,
+          y: orb1Y,
         }}
         className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-purple-500/20 via-pink-500/10 to-transparent rounded-full blur-3xl"
       />
@@ -70,8 +143,8 @@ const BackgroundElements = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, delay: 0.2, ease: "easeOut" }}
         style={{
-          x: useTransform(cursorXSpring, [0, dimensions.width], [100, -100]),
-          y: useTransform(cursorYSpring, [0, dimensions.height], [100, -100]),
+          x: orb2X,
+          y: orb2Y,
         }}
         className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-tl from-blue-500/20 via-cyan-500/10 to-transparent rounded-full blur-3xl"
       />
@@ -88,8 +161,8 @@ const BackgroundElements = () => {
           ease: "easeInOut",
         }}
         style={{
-          x: useTransform(cursorXSpring, [0, dimensions.width], [-50, 50]),
-          y: useTransform(cursorYSpring, [0, dimensions.height], [-50, 50]),
+          x: orb3X,
+          y: orb3Y,
         }}
         className="absolute top-1/3 left-1/3 w-[200px] h-[200px] bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-2xl"
       />
@@ -104,8 +177,8 @@ const BackgroundElements = () => {
           ease: "easeInOut",
         }}
         style={{
-          x: useTransform(cursorXSpring, [0, dimensions.width], [50, -50]),
-          y: useTransform(cursorYSpring, [0, dimensions.height], [50, -50]),
+          x: orb4X,
+          y: orb4Y,
         }}
         className="absolute bottom-1/3 right-1/3 w-[200px] h-[200px] bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl"
       />
@@ -122,8 +195,8 @@ const BackgroundElements = () => {
           ease: "easeInOut",
         }}
         style={{
-          x: useTransform(cursorXSpring, [0, dimensions.width], [-30, 30]),
-          y: useTransform(cursorYSpring, [0, dimensions.height], [-30, 30]),
+          x: orb5X,
+          y: orb5Y,
         }}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-500/5 via-pink-500/5 to-blue-500/5 rounded-full blur-3xl"
       />
