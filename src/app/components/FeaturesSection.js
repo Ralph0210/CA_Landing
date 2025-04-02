@@ -107,6 +107,8 @@ const FeaturesSection = () => {
   }, [mousePosition, cursorX, cursorY, isMounted])
 
   useEffect(() => {
+    if (!isMounted) return
+
     // Create animations for each card
     cardRefs.current.forEach((card, index) => {
       if (!card) return
@@ -126,7 +128,7 @@ const FeaturesSection = () => {
           ease: "power2.out",
           scrollTrigger: {
             trigger: card,
-            start: "top 60%",
+            start: "top 80%",
             end: "top 20%",
             toggleActions: "play none none none",
             once: true,
@@ -146,7 +148,7 @@ const FeaturesSection = () => {
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
     }
-  }, [])
+  }, [isMounted])
 
   if (!isMounted) {
     return null
